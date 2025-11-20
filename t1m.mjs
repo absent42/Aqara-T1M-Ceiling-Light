@@ -158,6 +158,7 @@ const definition = {
             color: {modes: ["xy"]},
             endpointNames: ["rgb"],
         }),
+        m.forcePowerSource({powerSource: "Mains (single phase)"}),
         lumiModernExtend.lumiZigbeeOTA(),
 
         m.enumLookup({
