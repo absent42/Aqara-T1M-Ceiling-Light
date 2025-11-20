@@ -372,15 +372,6 @@ const definition = {
 
                 const ATTR_RGB_EFFECT = 0x0527;
 
-                // Check ring light state (endpoint 2)
-                const shouldTurnOn = meta.state.state_rgb === "OFF";
-
-                if (shouldTurnOn) {
-                    const rgbEndpoint = meta.device.getEndpoint(2);
-                    await rgbEndpoint.command("genOnOff", "on", {}, {});
-                    await new Promise((resolve) => setTimeout(resolve, 100));
-                }
-
                 // Build the three messages using shared function
                 const {msg1, msg2, msg3} = buildRGBEffectMessages(colorList, brightness8bit, effectId, speed);
 
@@ -407,18 +398,15 @@ const definition = {
                     {manufacturerCode, disableDefaultResponse: false},
                 );
 
-                const stateUpdate = {
-                    rgb_effect: effect,
-                    rgb_effect_colors: colors,
-                    rgb_effect_brightness: brightnessPercent,
-                    rgb_effect_speed: speed,
+                 return {
+                    state: {
+                        rgb_effect: effect,
+                        rgb_effect_colors: colors,
+                        rgb_effect_brightness: brightnessPercent,
+                        rgb_effect_speed: speed,
+                        state_rgb: "ON",
+                    },
                 };
-
-                if (shouldTurnOn) {
-                    stateUpdate.state_rgb = "ON";
-                }
-
-                return {state: stateUpdate};
             },
         },
         {
