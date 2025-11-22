@@ -134,7 +134,7 @@ number between 1 and 100, representing speed %
   
 - Activating such saved effect scenes as well as the light's built in scenes appears to have some sort of vendor lock. Possibly the light is checking if the Zigbee commands are coming from an Aqara hub and won't activate them if the source IEEE address doesn't match.
   
-- As such, every time you want to activate a particular effect you will have to send the parameters for that effect to the light again (colour selections, brightness, speed and effect type). 
+- As such, every time you want to activate a particular effect pattern/scene you have to send all the parameters for that effect to the light again (colour selections, brightness, speed and effect type). This is currently achieved through Home Assistant MTQQ payloads containing your custom effect parameters. Example blueprints and card templates are provided to do this.
 
 - White Dynamic Effects are similarly done via OTA firmware writes, however the preview feature is also done this way with these effects.
 
