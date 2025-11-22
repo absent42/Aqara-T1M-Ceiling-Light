@@ -1,6 +1,32 @@
 # Aqara-T1M-Ceiling-Light
 Zigbee2MQTT external converter for Aqara T1M Ceiling Light with RGB ring light segment control and dynamic RGB effects.
 
+In static mode the RGB ring light has 26 individual segments each of which can be set to unique colors or turned off. These can be defined and activated through a Home Assistant blueprint.
+
+Dynamic RGB Effect patterns can be created and activated via Home Assistant having the following properties:
+
+*Effect Type:*
+
+**Flow 1 & Flow 2**: Colors smoothly transition from one to the next in a continuous loop. Flow 1 is clockwise, Flow 2 anti-clockwise
+
+**Fading**:
+Colors fade in and out, creating a gentle pulsing effect between colors.
+
+**Hopping**:
+Colors jump/switch instantly between colors with no transition.
+
+**Breathing**:
+Colors pulse like breathing - getting brighter then dimmer rhythmically.
+
+**Rolling**:
+Colors rotate around the ring in a spinning motion.
+
+*Brightness:* 1% - 100%
+
+*Speed:* 1% - 100%
+
+*Colors:* Between 1 and 8 colors can be set for each effect. The color slots are defined by a comma seperated list of RGB hex values, e.g. #ff0000,#00ff00,#0000ff for red, green, blue. 
+
 ## Installation
 In Zigbee2MQTT go to **settings** → **dev console** → **external converters**, create a new converter named **t1m.mjs** and paste in the contents of the file. Click save then restart Zigbee2MQTT via **settings** → **tools**
 
