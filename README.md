@@ -9,7 +9,7 @@ Alternatively place the file **t1m.mjs** in the folder zigbee2mqtt/data/external
 If an external converter is active for a device a cyan icon with "Supported: external" will be displayed under the device name in Zigbee2MQTT.
 
 ## Home Assistant
-## aqara-t1m-ring-segments.yaml
+## aqara_t1m_ring_segments.yaml
 Blueprint to control the RGB ring light segments.
 
 ### 1. Import the Blueprint
