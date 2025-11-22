@@ -94,7 +94,7 @@ number between 1 and 100, representing speed %
 3. For "Then do" select "MQTT Publish"
 4. Topic: ```zigbee2mqtt/YOUR_LIGHT_NAME/set``` (replacing YOUR_LIGHT_NAME as above)
 5. Tick "Payload"
-6. Enter your effect parameters as above. For example to trigger a flashing alert:
+6. Enter your effect parameters as above into the payload text box. For example to trigger a flashing alert:
    ```{"rgb_effect":"hopping","rgb_effect_colors":"#ff0000","rgb_effect_brightness":100,"rgb_effect_speed":100}```
 7. Save and trigger the automation as usual
 
