@@ -65,7 +65,7 @@ Once created, you can run the script in several ways:
 3. **Automation**: Trigger it from an automation
 
 ## aqara_t1m_rgb_effects.yaml 
-Home Assistant buttons card for activing RGB dynamic effects and creating custom effects. Uses recreation of the Aqara Home app preset effect patterns as examples: Dinner, Sunset, Autumn, Galaxy, Daydream, Holiday, Party, Meteor, Alert. 
+Home Assistant buttons card for activing RGB dynamic effects and creating custom effects patterns. Uses recreation of the Aqara Home app preset effect patterns as examples: Dinner, Sunset, Autumn, Galaxy, Daydream, Holiday, Party, Meteor, Alert. 
 
 ### 1. Usage
 1. Edit your Home Assistant dashboard
@@ -116,7 +116,16 @@ number between 1 and 100, representing brightness %
 ```
 number between 1 and 100, representing speed %
 ```
-## Using effects in automations
+## 3. Stopping Effects
+Click the **Stop Effects** button to turn off the dynamic effect, or
+
+Click any static preset button, or
+
+Adjust segments manually, or
+
+Turn the light off/on
+
+## 4. Using effects in automations
 1. Create a new automation
 2. Set up a trigger as usual
 3. For **Then do** click **Add action** then select **MQTT** → **Publish**
