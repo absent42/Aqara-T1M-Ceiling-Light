@@ -16,12 +16,12 @@ blueprint:
     
     global_brightness:
       name: Global Brightness
-      description: Brightness level for all segments (0-255). Leave at 255 for full brightness.
-      default: 255
+      description: Brightness level for all segments (1-100%). Leave at 100 for full brightness.
+      default: 100
       selector:
         number:
-          min: 0
-          max: 255
+          min: 1
+          max: 100
           step: 1
           mode: slider
     
@@ -209,6 +209,7 @@ blueprint:
         color_rgb:
 
 sequence:
+sequence:
   - variables:
       device_name: !input device_name
       brightness: !input global_brightness
@@ -238,38 +239,50 @@ sequence:
       c24: !input color_24
       c25: !input color_25
       c26: !input color_26
+  # Step 1: Set the global brightness for all ring segments
+  - service: mqtt.publish
+    data:
+      topic: "zigbee2mqtt/{{ device_name }}/set"
+      payload: >
+        {"ring_segments_brightness": {{ brightness }}}
+  
+  # Step 2: Wait briefly for brightness to be set in state
+  - delay:
+      milliseconds: 100
+  
+  # Step 3: Set the ring segment colors (brightness is read from state)
   - service: mqtt.publish
     data:
       topic: "zigbee2mqtt/{{ device_name }}/set"
       payload: >
         {
           "ring_segments": [
-            {"segment": 1, "color": "#{{ '%02x%02x%02x' | format(c01[0], c01[1], c01[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 2, "color": "#{{ '%02x%02x%02x' | format(c02[0], c02[1], c02[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 3, "color": "#{{ '%02x%02x%02x' | format(c03[0], c03[1], c03[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 4, "color": "#{{ '%02x%02x%02x' | format(c04[0], c04[1], c04[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 5, "color": "#{{ '%02x%02x%02x' | format(c05[0], c05[1], c05[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 6, "color": "#{{ '%02x%02x%02x' | format(c06[0], c06[1], c06[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 7, "color": "#{{ '%02x%02x%02x' | format(c07[0], c07[1], c07[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 8, "color": "#{{ '%02x%02x%02x' | format(c08[0], c08[1], c08[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 9, "color": "#{{ '%02x%02x%02x' | format(c09[0], c09[1], c09[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 10, "color": "#{{ '%02x%02x%02x' | format(c10[0], c10[1], c10[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 11, "color": "#{{ '%02x%02x%02x' | format(c11[0], c11[1], c11[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 12, "color": "#{{ '%02x%02x%02x' | format(c12[0], c12[1], c12[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 13, "color": "#{{ '%02x%02x%02x' | format(c13[0], c13[1], c13[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 14, "color": "#{{ '%02x%02x%02x' | format(c14[0], c14[1], c14[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 15, "color": "#{{ '%02x%02x%02x' | format(c15[0], c15[1], c15[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 16, "color": "#{{ '%02x%02x%02x' | format(c16[0], c16[1], c16[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 17, "color": "#{{ '%02x%02x%02x' | format(c17[0], c17[1], c17[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 18, "color": "#{{ '%02x%02x%02x' | format(c18[0], c18[1], c18[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 19, "color": "#{{ '%02x%02x%02x' | format(c19[0], c19[1], c19[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 20, "color": "#{{ '%02x%02x%02x' | format(c20[0], c20[1], c20[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 21, "color": "#{{ '%02x%02x%02x' | format(c21[0], c21[1], c21[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 22, "color": "#{{ '%02x%02x%02x' | format(c22[0], c22[1], c22[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 23, "color": "#{{ '%02x%02x%02x' | format(c23[0], c23[1], c23[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 24, "color": "#{{ '%02x%02x%02x' | format(c24[0], c24[1], c24[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 25, "color": "#{{ '%02x%02x%02x' | format(c25[0], c25[1], c25[2]) }}", "brightness": {{ brightness }}},
-            {"segment": 26, "color": "#{{ '%02x%02x%02x' | format(c26[0], c26[1], c26[2]) }}", "brightness": {{ brightness }}}
+            {"segment": 1, "color": "#{{ '%02x%02x%02x' | format(c01[0], c01[1], c01[2]) }}"},
+            {"segment": 2, "color": "#{{ '%02x%02x%02x' | format(c02[0], c02[1], c02[2]) }}"},
+            {"segment": 3, "color": "#{{ '%02x%02x%02x' | format(c03[0], c03[1], c03[2]) }}"},
+            {"segment": 4, "color": "#{{ '%02x%02x%02x' | format(c04[0], c04[1], c04[2]) }}"},
+            {"segment": 5, "color": "#{{ '%02x%02x%02x' | format(c05[0], c05[1], c05[2]) }}"},
+            {"segment": 6, "color": "#{{ '%02x%02x%02x' | format(c06[0], c06[1], c06[2]) }}"},
+            {"segment": 7, "color": "#{{ '%02x%02x%02x' | format(c07[0], c07[1], c07[2]) }}"},
+            {"segment": 8, "color": "#{{ '%02x%02x%02x' | format(c08[0], c08[1], c08[2]) }}"},
+            {"segment": 9, "color": "#{{ '%02x%02x%02x' | format(c09[0], c09[1], c09[2]) }}"},
+            {"segment": 10, "color": "#{{ '%02x%02x%02x' | format(c10[0], c10[1], c10[2]) }}"},
+            {"segment": 11, "color": "#{{ '%02x%02x%02x' | format(c11[0], c11[1], c11[2]) }}"},
+            {"segment": 12, "color": "#{{ '%02x%02x%02x' | format(c12[0], c12[1], c12[2]) }}"},
+            {"segment": 13, "color": "#{{ '%02x%02x%02x' | format(c13[0], c13[1], c13[2]) }}"},
+            {"segment": 14, "color": "#{{ '%02x%02x%02x' | format(c14[0], c14[1], c14[2]) }}"},
+            {"segment": 15, "color": "#{{ '%02x%02x%02x' | format(c15[0], c15[1], c15[2]) }}"},
+            {"segment": 16, "color": "#{{ '%02x%02x%02x' | format(c16[0], c16[1], c16[2]) }}"},
+            {"segment": 17, "color": "#{{ '%02x%02x%02x' | format(c17[0], c17[1], c17[2]) }}"},
+            {"segment": 18, "color": "#{{ '%02x%02x%02x' | format(c18[0], c18[1], c18[2]) }}"},
+            {"segment": 19, "color": "#{{ '%02x%02x%02x' | format(c19[0], c19[1], c19[2]) }}"},
+            {"segment": 20, "color": "#{{ '%02x%02x%02x' | format(c20[0], c20[1], c20[2]) }}"},
+            {"segment": 21, "color": "#{{ '%02x%02x%02x' | format(c21[0], c21[1], c21[2]) }}"},
+            {"segment": 22, "color": "#{{ '%02x%02x%02x' | format(c22[0], c22[1], c22[2]) }}"},
+            {"segment": 23, "color": "#{{ '%02x%02x%02x' | format(c23[0], c23[1], c23[2]) }}"},
+            {"segment": 24, "color": "#{{ '%02x%02x%02x' | format(c24[0], c24[1], c24[2]) }}"},
+            {"segment": 25, "color": "#{{ '%02x%02x%02x' | format(c25[0], c25[1], c25[2]) }}"},
+            {"segment": 26, "color": "#{{ '%02x%02x%02x' | format(c26[0], c26[1], c26[2]) }}"}
           ]
         }
 
