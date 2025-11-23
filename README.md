@@ -116,7 +116,7 @@ number between 1 and 100, representing brightness %
 ```
 number between 1 and 100, representing speed %
 ```
-## 3. Stopping Effects
+### 3. Stopping Effects
 Click the **Stop Effects** button to turn off the dynamic effect, or
 
 Click any static preset button, or
@@ -125,7 +125,7 @@ Adjust segments manually, or
 
 Turn the light off/on
 
-## 4. Using effects in automations
+### 4. Using effects in automations
 1. Create a new automation
 2. Set up a trigger as usual
 3. For **Then do** click **Add action** then select **MQTT** → **Publish**
