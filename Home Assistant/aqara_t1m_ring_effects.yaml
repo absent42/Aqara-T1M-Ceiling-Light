@@ -1,0 +1,161 @@
+blueprint:
+  name: Aqara T1M – RGB effect script (RGB selectors, up to 8 colors)
+  description: >
+    Script blueprint to send a dynamic RGB effect payload to Aqara T1M via
+    Zigbee2MQTT, using up to 8 RGB color pickers.
+  domain: script
+  input:
+    device_name:
+      name: Device Name
+      description: >
+        The friendly name of your Aqara T1M light as configured in Zigbee2MQTT.
+        This is the name that appears in the Zigbee2MQTT web interface, NOT
+        the Home Assistant entity name.
+      default: "Living Room Ceiling Light"
+      selector:
+        text:
+
+    rgb_effect:
+      name: RGB Effect
+      description: Select the dynamic effect to use
+      default: "flow1"
+      selector:
+        select:
+          options:
+            - "flow1"
+            - "flow2"
+            - "fading"
+            - "hopping"
+            - "breathing"
+            - "rolling"
+            - "off"
+
+    number_of_colors:
+      name: Number of colors
+      description: How many of the color pickers to use (1–8)
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 8
+          mode: slider
+
+    color_01:
+      name: Color 1
+      description: First effect color
+      default: [214, 235, 255]
+      selector:
+        color_rgb:
+
+    color_02:
+      name: Color 2
+      description: Second effect color
+      default: [92, 86, 255]
+      selector:
+        color_rgb:
+
+    color_03:
+      name: Color 3
+      description: Third effect color
+      default: [93, 0, 255]
+      selector:
+        color_rgb:
+
+    color_04:
+      name: Color 4
+      description: Fourth effect color
+      default: [255, 0, 0]
+      selector:
+        color_rgb:
+
+    color_05:
+      name: Color 5
+      description: Fifth effect color
+      default: [0, 255, 0]
+      selector:
+        color_rgb:
+
+    color_06:
+      name: Color 6
+      description: Sixth effect color
+      default: [0, 255, 255]
+      selector:
+        color_rgb:
+
+    color_07:
+      name: Color 7
+      description: Seventh effect color
+      default: [255, 255, 0]
+      selector:
+        color_rgb:
+
+    color_08:
+      name: Color 8
+      description: Eighth effect color
+      default: [255, 0, 255]
+      selector:
+        color_rgb:
+
+    rgb_effect_brightness:
+      name: Effect Brightness
+      description: Brightness (1–100)
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          mode: slider
+
+    rgb_effect_speed:
+      name: Effect Speed
+      description: Speed (1–100)
+      default: 75
+      selector:
+        number:
+          min: 1
+          max: 100
+          mode: slider
+
+sequence:
+  - variables:
+      device_name: !input device_name
+      rgb_effect: !input rgb_effect
+      number_of_colors: !input number_of_colors
+      color_01: !input color_01
+      color_02: !input color_02
+      color_03: !input color_03
+      color_04: !input color_04
+      color_05: !input color_05
+      color_06: !input color_06
+      color_07: !input color_07
+      color_08: !input color_08
+      rgb_effect_brightness: !input rgb_effect_brightness
+      rgb_effect_speed: !input rgb_effect_speed
+
+  - service: mqtt.publish
+    data:
+      topic: >
+        zigbee2mqtt/{{ device_name }}/set
+      payload: >
+        {%- set all_colors = [
+          color_01, color_02, color_03, color_04,
+          color_05, color_06, color_07, color_08
+        ] -%}
+        {%- set count = (number_of_colors | int) -%}
+        {%- set colors = all_colors[:count] -%}
+
+        {%- set hexcolors = namespace(value=[]) -%}
+        {%- for c in colors -%}
+          {%- if c is not none -%}
+            {%- set hex = '#%02x%02x%02x' % (c[0], c[1], c[2]) -%}
+            {%- set hexcolors.value = hexcolors.value + [hex] -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {
+          "rgb_effect": "{{ rgb_effect }}",
+          "rgb_effect_colors": "{{ hexcolors.value | join(',') }}",
+          "rgb_effect_brightness": {{ rgb_effect_brightness }},
+          "rgb_effect_speed": {{ rgb_effect_speed }}
+        }
+
+mode: single
