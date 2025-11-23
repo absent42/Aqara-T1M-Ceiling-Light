@@ -1,0 +1,32 @@
+<svg width="400" height="400" viewBox="0 0 400 400"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 5 segments, 72° each -->
+  <!-- Coordinates precomputed for simplicity -->
+
+  <!-- Segment 1 -->
+  <path id="seg1" fill="#c181eb"
+        d="M200,200 L200,20
+           A180,180 0 0,1 370.6,144.2 Z" />
+
+  <!-- Segment 2 -->
+  <path id="seg2" fill="#9745de"
+        d="M200,200 L370.6,144.2
+           A180,180 0 0,1 309.8,351.8 Z" />
+
+  <!-- Segment 3 -->
+  <path id="seg3" fill="#ff457a"
+        d="M200,200 L309.8,351.8
+           A180,180 0 0,1 90.2,351.8 Z" />
+
+  <!-- Segment 4 -->
+  <path id="seg4" fill="#ffa931"
+        d="M200,200 L90.2,351.8
+           A180,180 0 0,1 29.4,144.2 Z" />
+
+  <!-- Segment 5 -->
+  <path id="seg5" fill="#ffd78c"
+        d="M200,200 L29.4,144.2
+           A180,180 0 0,1 200,20 Z" />
+
+</svg>

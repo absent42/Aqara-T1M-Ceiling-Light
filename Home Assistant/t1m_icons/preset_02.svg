@@ -1,0 +1,38 @@
+<svg width="400" height="400" viewBox="0 0 400 400"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 4 slices, 90° each -->
+
+  <!-- Segment 1 -->
+  <path id="seg1" fill="#ffc86f"
+        d="
+          M200,200
+          L200,20
+          A180,180 0 0,1 380,200
+          Z" />
+
+  <!-- Segment 2 -->
+  <path id="seg2" fill="#fffcf9"
+        d="
+          M200,200
+          L380,200
+          A180,180 0 0,1 200,380
+          Z" />
+
+  <!-- Segment 3 -->
+  <path id="seg3" fill="#fb7d1c"
+        d="
+          M200,200
+          L200,380
+          A180,180 0 0,1 20,200
+          Z" />
+
+  <!-- Segment 4 -->
+  <path id="seg4" fill="#ffebc1"
+        d="
+          M200,200
+          L20,200
+          A180,180 0 0,1 200,20
+          Z" />
+
+</svg>

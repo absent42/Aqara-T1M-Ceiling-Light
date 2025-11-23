@@ -1,0 +1,55 @@
+<svg width="400" height="400" viewBox="0 0 400 400"
+     xmlns="http://www.w3.org/2000/svg" 
+     role="img" aria-label="6-segment pie precise">
+
+  <!-- 6 slices of 60° each -->
+
+  <!-- Segment 1 -->
+  <path id="seg1" fill="#ffaaa1"
+        d="
+          M200,200
+          L200,20
+          A180,180 0 0,1 355.884573,110
+          Z" />
+
+  <!-- Segment 2 -->
+  <path id="seg2" fill="#ff86a0"
+        d="
+          M200,200
+          L355.884573,110
+          A180,180 0 0,1 355.884573,290
+          Z" />
+
+  <!-- Segment 3 -->
+  <path id="seg3" fill="#ff675a"
+        d="
+          M200,200
+          L355.884573,290
+          A180,180 0 0,1 200,380
+          Z" />
+
+  <!-- Segment 4 -->
+  <path id="seg4" fill="#ff457a"
+        d="
+          M200,200
+          L200,380
+          A180,180 0 0,1 44.115427,290
+          Z" />
+
+  <!-- Segment 5 -->
+  <path id="seg5" fill="#e02233"
+        d="
+          M200,200
+          L44.115427,290
+          A180,180 0 0,1 44.115427,110
+          Z" />
+
+  <!-- Segment 6 -->
+  <path id="seg6" fill="#ffc7d0"
+        d="
+          M200,200
+          L44.115427,110
+          A180,180 0 0,1 200,20
+          Z" />
+
+</svg>
