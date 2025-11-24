@@ -1,5 +1,10 @@
+## Aqara T1M RGB Ring Dynamic Effects
+## Home Assistant script blueprint
+##
+## Install to blueprints/script/aqara_t1m/aqara_t1m_ring_effects_blueprint.yaml
+
 blueprint:
-  name: Aqara T1M – RGB effect script (RGB selectors, up to 8 colors)
+  name: Aqara T1M - RGB Ring Effect Script
   description: >
     Script blueprint to send a dynamic RGB effect payload to Aqara T1M via
     Zigbee2MQTT, using up to 8 RGB color pickers.
@@ -31,7 +36,7 @@ blueprint:
 
     number_of_colors:
       name: Number of colors
-      description: How many of the color pickers to use (1–8)
+      description: How many of the color pickers to use (1-8)
       default: 3
       selector:
         number:
@@ -97,7 +102,7 @@ blueprint:
 
     rgb_effect_brightness:
       name: Effect Brightness
-      description: Brightness (1–100)
+      description: Brightness (1-100)
       default: 100
       selector:
         number:
@@ -107,7 +112,7 @@ blueprint:
 
     rgb_effect_speed:
       name: Effect Speed
-      description: Speed (1–100)
+      description: Speed (1-100)
       default: 75
       selector:
         number:
