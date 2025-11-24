@@ -1,7 +1,17 @@
-## Example card for ring segment buttons with scripts
+## Aqara T1M RGB Ring Segments
+## Home Assistant buttons with custom icons
+##
+## These buttons activate replications of the ring segment preset from the Aqara Home app
 ##
 ## Uses hass-custom_icons - https://github.com/thomasloven/hass-custom_icons
-## Place icons in folder /config/custom_icons/t1m_icons 
+##
+## Installation
+## 1. Install the blueprint aqara_t1m_ring_segments_blueprint.yaml
+## 2. Place icons in folder custom_icons/t1m_icons 
+## 3. Add the effect scripts from aqara_t1m_ring_segments_script_examples.yaml to your scripts.yaml
+## 4. Edit your Home Assistant dashboard
+## 5. Click **Add Card** >> **Manual**
+## 6. Copy the YAML from below
 ##
 ## For brightness slider create an Input Helper via Home Assistant UI
 ## 1. Settings → Devices & Services → Helpers
@@ -15,7 +25,7 @@ type: vertical-stack
 cards:
   - type: markdown
     content: |
-      ## T1M Ring Presets
+      ## Aqara RGB T1M Ring Segments
       
   # Brightness Control Slider
   - type: entities
