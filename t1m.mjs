@@ -95,16 +95,6 @@ function buildRingPacket(segments, hexColor, brightness = 255) {
     return [0x01, 0x01, 0x01, 0x0f, brightnessByte, ...segmentMask, 0x00, 0x00, 0x00, 0x00, ...colorBytes, 0x02, 0xbc];
 }
 
-// T1M RGB Dynamic Effect definitions
-const T1M_RGB_EFFECTS = {
-    flow1: 0,
-    flow2: 1,
-    fading: 2,
-    hopping: 3,
-    breathing: 4,
-    rolling: 5,
-};
-
 const definition = {
     zigbeeModel: ["lumi.light.acn032", "lumi.light.acn031"],
     model: "CL-L02D",
@@ -202,12 +192,33 @@ const definition = {
             valueMax: 100,
             valueStep: 1,
         }),
+
+        m.enumLookup({
+            name: "rgb_effect",
+            lookup: {flow1: 0, flow2: 1, fading: 2, hopping: 3, breathing: 4, rolling: 5},
+            cluster: "manuSpecificLumi",
+            attribute: {ID: 0x051f, type: 0x23},
+            description: "RGB dynamic effect type for ring light",
+            zigbeeCommandOptions: {manufacturerCode},
+        }),
+
+        m.numeric({
+            name: "rgb_effect_speed",
+            cluster: "manuSpecificLumi",
+            attribute: {ID: 0x0520, type: 0x20},
+            description: "RGB dynamic effect speed (1-100%)",
+            zigbeeCommandOptions: {manufacturerCode},
+            unit: "%",
+            valueMin: 1,
+            valueMax: 100,
+            valueStep: 1,
+        }),
     ],
 
     meta: {},
 
     exposes: [
-        // Static ring segment RGB control
+        // Ring segment control
         exposes
             .list(
                 "ring_segments",
@@ -229,11 +240,7 @@ const definition = {
             .withDescription("Brightness for ring segments (1-100%)")
             .withCategory("config"),
 
-        // Dynamic ring RGB effects
-        exposes
-            .enum("rgb_effect", ea.SET, Object.keys(T1M_RGB_EFFECTS))
-            .withDescription("RGB dynamic effect type for ring light")
-            .withCategory("config"),
+        // RGB dynamic effect parameters (effect type and speed handled by modernExtend)
         exposes
             .text("rgb_effect_colors", ea.SET)
             .withDescription("Comma-separated RGB hex colors (e.g., #FF0000,#00FF00,#0000FF). 1-8 colors")
@@ -245,13 +252,6 @@ const definition = {
             .withValueStep(1)
             .withUnit("%")
             .withDescription("RGB dynamic effect brightness (1-100%)")
-            .withCategory("config"),
-        exposes
-            .numeric("rgb_effect_speed", ea.SET)
-            .withValueMin(1)
-            .withValueMax(100)
-            .withUnit("%")
-            .withDescription("RGB dynamic effect speed (1-100%)")
             .withCategory("config"),
     ],
 
@@ -338,19 +338,12 @@ const definition = {
             },
         },
         {
-            key: ["rgb_effect", "rgb_effect_colors", "rgb_effect_brightness", "rgb_effect_speed"],
+            key: ["rgb_effect_colors", "rgb_effect_brightness"],
             convertSet: async (entity, key, value, meta) => {
                 // Read from incoming message first (allows single MQTT payload with all params),
                 // then fall back to state, then to defaults
-                const effect = meta.message.rgb_effect || meta.state.rgb_effect || "flow1";
                 const colors = meta.message.rgb_effect_colors || meta.state.rgb_effect_colors || "#FF0000,#00FF00,#0000FF";
                 const brightnessPercent = meta.message.rgb_effect_brightness ?? meta.state.rgb_effect_brightness ?? 100;
-                const speed = meta.message.rgb_effect_speed ?? meta.state.rgb_effect_speed ?? 50;
-
-                const effectId = T1M_RGB_EFFECTS[effect];
-                if (effectId === undefined) {
-                    throw new Error(`Unknown effect: ${effect}. Supported: ${Object.keys(T1M_RGB_EFFECTS).join(", ")}`);
-                }
 
                 // Parse colors
                 const colorList = colors.split(",").map((c) => c.trim());
@@ -363,10 +356,6 @@ const definition = {
                     throw new Error("Brightness must be between 1 and 100%");
                 }
 
-                if (speed < 1 || speed > 100) {
-                    throw new Error("Speed must be between 1 and 100%");
-                }
-
                 // Convert brightness percentage to 8-bit value (0-254)
                 const brightness8bit = Math.round((brightnessPercent / 100) * 254);
 
@@ -377,16 +366,11 @@ const definition = {
                     colorBytes.push(...encoded);
                 }
 
-                // Build color message (0x03 prefix) - still sent to 0x0527
+                // Build color message (0x03 prefix) - sent to 0x0527
                 const msg1Length = 3 + colorList.length * 4;
                 const msg1 = Buffer.from([0x01, 0x01, 0x03, msg1Length, brightness8bit, 0x00, colorList.length, ...colorBytes]);
 
                 const ATTR_RGB_COLORS = 0x0527;
-                const ATTR_RGB_EFFECT_TYPE = 0x051f;
-                const ATTR_RGB_EFFECT_SPEED = 0x0520;
-
-                // Send effect type to 0x051f (32-bit uint)
-                await entity.write("manuSpecificLumi", {[ATTR_RGB_EFFECT_TYPE]: {value: effectId, type: 0x23}}, {manufacturerCode});
 
                 // Send colors to 0x0527
                 await entity.write(
@@ -395,16 +379,11 @@ const definition = {
                     {manufacturerCode, disableDefaultResponse: false},
                 );
 
-                // Send speed to 0x0520 (8-bit uint)
-                await entity.write("manuSpecificLumi", {[ATTR_RGB_EFFECT_SPEED]: {value: speed, type: 0x20}}, {manufacturerCode});
-
                 // Update state - ring light turns on when effects are activated
                 return {
                     state: {
-                        rgb_effect: effect,
                         rgb_effect_colors: colors,
                         rgb_effect_brightness: brightnessPercent,
-                        rgb_effect_speed: speed,
                         state_rgb: "ON",
                     },
                 };
