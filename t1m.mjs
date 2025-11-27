@@ -113,6 +113,9 @@ const definition = {
         const endpoint = device.getEndpoint(1);
         await endpoint.read("manuSpecificLumi", [0x0515], {manufacturerCode}); // dimming_range_minimum
         await endpoint.read("manuSpecificLumi", [0x0516], {manufacturerCode}); // dimming_range_maximum
+        await endpoint.read("genLevelCtrl", [0x0012], {}); // off_on_duration
+        await endpoint.read("genLevelCtrl", [0x0013], {}); // on_off_duration
+        await endpoint.read("manuSpecificLumi", [0x0517], {manufacturerCode}); // power_on_behaviour
     },
 
     extend: [
