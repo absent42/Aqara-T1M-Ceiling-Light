@@ -29,7 +29,7 @@ Colors rotate around the ring in a spinning motion.
 
 ## Installation
 
-*Requires Zigbee2MQTT 2.6.4*
+*Requires Zigbee2MQTT 2.7.0 or above*
 
 In Zigbee2MQTT go to **settings** → **dev console** → **external converters**, create a new converter named **t1m.mjs** and paste in the contents of the file. Click save then restart Zigbee2MQTT via **settings** → **tools**
 
