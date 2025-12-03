@@ -160,17 +160,14 @@ Simple dashboard buttons card example for activating RGB dynamic effects scripts
 4. For the "Stop" button, replace light.your_t1m_light with your light's actual RGB entity ID
 
 ### Stopping Effects
-Click the **Stop Effects** button to turn off the dynamic effect, or
-
-Click any static preset button, or
-
-Adjust ring light settings manually or with automation, or
-
+Click the **Stop Effects** button to turn off the dynamic effect, or  
+Click any static preset button, or  
+Adjust ring light settings manually or with automation, or  
 Turn the light off/on
 
 ### Finding Your Light Entity ID
 **Settings** → **Entities**  
-Find your T1M light 
+Find your T1M light  
 Note the RGB entity ID (e.g., light.ceiling_light_rgb)
 
 ## Notes
