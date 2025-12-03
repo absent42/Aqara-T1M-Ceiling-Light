@@ -169,10 +169,9 @@ Adjust ring light settings manually or with automation, or
 Turn the light off/on
 
 ### Finding Your Light Entity ID
-Settings → Devices & Services
-Click your Zigbee2MQTT integration
-Find your T1M light
-Note the entity ID (e.g., light.ceiling_light_rgb)
+**Settings** → **Entities**  
+Find your T1M light 
+Note the RGB entity ID (e.g., light.ceiling_light_rgb)
 
 ## Notes
   
