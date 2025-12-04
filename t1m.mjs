@@ -128,16 +128,8 @@ const definition = {
             endpointNames: ["rgb"],
         }),
         m.forcePowerSource({powerSource: "Mains (single phase)"}),
+        lumiModernExtend.lumiPowerOnBehavior({lookup: {on: 0, previous: 1, off: 2}}),
         lumiModernExtend.lumiZigbeeOTA(),
-
-        m.enumLookup({
-            name: "power_on_behaviour",
-            lookup: {on: 0, previous: 1, off: 2},
-            cluster: "manuSpecificLumi",
-            attribute: {ID: 0x0517, type: 0x20},
-            description: "Controls the behavior when the device is powered on after power loss",
-            zigbeeCommandOptions: {manufacturerCode},
-        }),
 
         lumiModernExtend.lumiDimmingRangeMin(),
         lumiModernExtend.lumiDimmingRangeMax(),
