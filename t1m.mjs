@@ -40,9 +40,9 @@ function encodeColor(hexColor) {
         throw new Error(`Invalid color format: ${hexColor}. Use format #RRGGBB (e.g., #FF0000)`);
     }
 
-    const r = Number.parseInt(normalized.substr(0, 2), 16);
-    const g = Number.parseInt(normalized.substr(2, 2), 16);
-    const b = Number.parseInt(normalized.substr(4, 2), 16);
+    const r = Number.parseInt(normalized.substring(0, 2), 16);
+    const g = Number.parseInt(normalized.substring(2, 4), 16);
+    const b = Number.parseInt(normalized.substring(4, 6), 16);
 
     // Convert RGB to XY
     const xy = rgbToXY(r, g, b);
@@ -60,13 +60,36 @@ function encodeColor(hexColor) {
     ];
 }
 
-// Static ring segment control
-function generateSegmentMask(segments) {
-    const mask = [0, 0, 0, 0];
+// ============================================================================
+// UNIFIED SEGMENT CONTROL HELPERS (works for both T1M and T1 Strip)
+// ============================================================================
+
+/**
+ * Detect device type from model ID
+ * @param {object} meta - Zigbee2MQTT meta object
+ * @returns {string} "t1m" or "strip"
+ */
+function getDeviceType(meta) {
+    const model = meta.device.modelID;
+    // T1M: lumi.light.acn032, lumi.light.acn031
+    // T1 Strip: lumi.light.acn132
+    return model === "lumi.light.acn132" ? "strip" : "t1m";
+}
+
+/**
+ * Generate segment bitmask for specified segments
+ * @param {number[]} segments - Array of segment numbers (1-based)
+ * @param {string} deviceType - "t1m" or "strip"
+ * @param {number} maxSegments - Maximum valid segment number
+ * @returns {number[]} Bitmask array (4 bytes for T1M, 8 bytes for strip)
+ */
+function generateSegmentMask(segments, deviceType, maxSegments) {
+    const maskSize = deviceType === "t1m" ? 4 : 8;
+    const mask = new Array(maskSize).fill(0);
 
     for (const seg of segments) {
-        if (seg < 1 || seg > 26) {
-            throw new Error(`Invalid segment number: ${seg}. Must be 1-26`);
+        if (seg < 1 || seg > maxSegments) {
+            throw new Error(`Invalid segment: ${seg}. Must be 1-${maxSegments}`);
         }
 
         const bitPos = seg - 1;
@@ -79,21 +102,42 @@ function generateSegmentMask(segments) {
     return mask;
 }
 
-// Build packet for ring segment control
-function buildRingPacket(segments, hexColor, brightness = 255) {
-    const segmentMask = generateSegmentMask(segments);
+/**
+ * Build segment control packet
+ * @param {number[]} segments - Array of segment numbers (1-based)
+ * @param {string} hexColor - Hex color string (e.g., "#FF0000")
+ * @param {number} brightness - Brightness value (0-255)
+ * @param {string} deviceType - "t1m" or "strip"
+ * @param {number} maxSegments - Maximum valid segment number
+ * @returns {number[]} Packet bytes
+ */
+function buildSegmentPacket(segments, hexColor, brightness, deviceType, maxSegments) {
+    const segmentMask = generateSegmentMask(segments, deviceType, maxSegments);
     const colorBytes = encodeColor(hexColor);
     const brightnessByte = Math.max(0, Math.min(255, Math.round(brightness)));
 
-    // Packet structure for static segment colors:
+    if (deviceType === "t1m") {
+        // T1M packet structure:
+        // [0-3]:   Fixed header (01:01:01:0f)
+        // [4]:     Brightness (0-255)
+        // [5-8]:   Segment bitmask (4 bytes)
+        // [9-12]:  Reserved (00:00:00:00)
+        // [13-16]: Color (XY, 4 bytes)
+        // [17-18]: Footer (02:bc)
+        return [0x01, 0x01, 0x01, 0x0f, brightnessByte, ...segmentMask, 0x00, 0x00, 0x00, 0x00, ...colorBytes, 0x02, 0xbc];
+    }
+    // T1 Strip packet structure:
     // [0-3]:   Fixed header (01:01:01:0f)
     // [4]:     Brightness (0-255)
-    // [5-8]:   Segment bitmask (4 bytes)
-    // [9-12]:  Reserved (00:00:00:00)
+    // [5-12]:  Segment bitmask (8 bytes)
     // [13-16]: Color (XY, 4 bytes)
-    // [17-18]: Footer (02:bc)
-    return [0x01, 0x01, 0x01, 0x0f, brightnessByte, ...segmentMask, 0x00, 0x00, 0x00, 0x00, ...colorBytes, 0x02, 0xbc];
+    // [17-18]: Footer (00:14)
+    return [0x01, 0x01, 0x01, 0x0f, brightnessByte, ...segmentMask, ...colorBytes, 0x00, 0x14];
 }
+
+// ============================================================================
+// END UNIFIED SEGMENT CONTROL HELPERS
+// ============================================================================
 
 const definition = {
     zigbeeModel: ["lumi.light.acn032", "lumi.light.acn031"],
@@ -164,7 +208,7 @@ const definition = {
         // Ring segment control
         exposes
             .list(
-                "ring_segments",
+                "segment_colors",
                 ea.SET,
                 exposes
                     .composite("segment_color", "segment_color", ea.SET)
@@ -175,7 +219,7 @@ const definition = {
 
         // Ring segment brightness control - percentage based (applies to all segments)
         exposes
-            .numeric("ring_segments_brightness", ea.SET)
+            .numeric("segment_brightness", ea.SET)
             .withValueMin(1)
             .withValueMax(100)
             .withValueStep(1)
@@ -200,41 +244,45 @@ const definition = {
 
     toZigbee: [
         {
-            key: ["ring_segments", "ring_segments_brightness"],
+            key: ["segment_colors", "segment_brightness"],
             convertSet: async (entity, key, value, meta) => {
                 // Handle brightness setting
-                if (key === "ring_segments_brightness") {
+                if (key === "segment_brightness") {
                     if (value < 1 || value > 100) {
                         throw new Error(`Invalid brightness: ${value}. Must be 1-100%`);
                     }
-                    return {state: {ring_segments_brightness: value}};
+                    return {state: {segment_brightness: value}};
                 }
 
-                // Ring segments
+                // Segment colors
                 if (!Array.isArray(value) || value.length === 0) {
-                    throw new Error("ring_segments must be a non-empty array");
+                    throw new Error("segment_colors must be a non-empty array");
                 }
+
+                // Detect device type and determine max segments
+                const deviceType = getDeviceType(meta);
+                const maxSegments = deviceType === "t1m" ? 26 : Math.round((meta.state.length || 2) * 5);
 
                 // Brightness from state or use default (100%)
-                const brightnessPercent = meta.state.ring_segments_brightness !== undefined ? meta.state.ring_segments_brightness : 100;
+                const brightnessPercent = meta.state.segment_brightness !== undefined ? meta.state.segment_brightness : 100;
 
                 // Convert percentage (1-100) to hardware value (0-255)
                 const brightness = Math.round((brightnessPercent / 100) * 255);
 
-                // Group segments by colour only
+                // Group segments by color
                 const colorGroups = {};
                 const specifiedSegments = new Set();
 
                 for (const item of value) {
                     if (!item.segment || !item.color) {
-                        throw new Error('Each segment must have "segment" (1-26) and "color" (#RRGGBB) fields');
+                        throw new Error(`Each segment must have "segment" (1-${maxSegments}) and "color" (#RRGGBB) fields`);
                     }
 
                     const segment = item.segment;
                     const color = item.color.toUpperCase();
 
-                    if (segment < 1 || segment > 26) {
-                        throw new Error(`Invalid segment: ${segment}. Must be 1-26`);
+                    if (segment < 1 || segment > maxSegments) {
+                        throw new Error(`Invalid segment: ${segment}. Must be 1-${maxSegments}`);
                     }
 
                     if (!colorGroups[color]) {
@@ -249,38 +297,46 @@ const definition = {
 
                 // Turn off unspecified segments by setting to black (#000000)
                 const unspecifiedSegments = [];
-                for (let seg = 1; seg <= 26; seg++) {
+                for (let seg = 1; seg <= maxSegments; seg++) {
                     if (!specifiedSegments.has(seg)) {
                         unspecifiedSegments.push(seg);
                     }
                 }
 
                 if (unspecifiedSegments.length > 0) {
-                    colorGroups["#000000"] = {
-                        color: "#000000",
-                        segments: unspecifiedSegments,
-                    };
+                    if (!colorGroups["#000000"]) {
+                        colorGroups["#000000"] = {
+                            color: "#000000",
+                            segments: unspecifiedSegments,
+                        };
+                    } else {
+                        colorGroups["#000000"].segments.push(...unspecifiedSegments);
+                    }
                 }
 
                 // Send one packet per color group
                 const groups = Object.values(colorGroups);
+                const ATTR_SEGMENT_CONTROL = 0x0527;
+
                 for (let i = 0; i < groups.length; i++) {
                     const group = groups[i];
-                    const packet = buildRingPacket(group.segments, group.color, brightness);
+                    const packet = buildSegmentPacket(group.segments, group.color, brightness, deviceType, maxSegments);
 
-                    const ATTR_RING_CONTROL = 0x0527;
-                    await entity.write("manuSpecificLumi", {[ATTR_RING_CONTROL]: {value: packet, type: 0x41}}, {manufacturerCode});
+                    await entity.write(
+                        "manuSpecificLumi",
+                        {[ATTR_SEGMENT_CONTROL]: {value: Buffer.from(packet), type: 0x41}},
+                        {manufacturerCode, disableDefaultResponse: false},
+                    );
 
                     if (i < groups.length - 1) {
                         await new Promise((resolve) => setTimeout(resolve, 50));
                     }
                 }
 
-                // Determine correct state key based on endpoint name
-                const stateKey = meta.endpoint_name ? `state_${meta.endpoint_name}` : "state";
+                // Determine correct state key based on device type
+                const stateKey = deviceType === "t1m" ? "state_rgb" : "state";
 
-                // Update state - ring light state turns on when segments are activated
-                return {state: {ring_segments: value, [stateKey]: "ON"}};
+                return {state: {segment_colors: value, [stateKey]: "ON"}};
             },
         },
         {
@@ -302,8 +358,8 @@ const definition = {
                     throw new Error("Brightness must be between 1 and 100%");
                 }
 
-                // Convert brightness percentage to 8-bit value (0-254)
-                const brightness8bit = Math.round((brightnessPercent / 100) * 254);
+                // Convert brightness percentage to 8-bit value (0-255)
+                const brightness8bit = Math.round((brightnessPercent / 100) * 255);
 
                 // Encode all colors for the color message
                 const colorBytes = [];
@@ -325,8 +381,9 @@ const definition = {
                     {manufacturerCode, disableDefaultResponse: false},
                 );
 
-                // Determine correct state key based on endpoint name
-                const stateKey = meta.endpoint_name ? `state_${meta.endpoint_name}` : "state";
+                // Determine correct state key based on device type
+                const deviceType = getDeviceType(meta);
+                const stateKey = deviceType === "t1m" ? "state_rgb" : "state";
 
                 return {
                     state: {
