@@ -1,0 +1,181 @@
+## Aqara T1M Ceiling Light - Ring Gradient Colors
+## Home Assistant script blueprint
+##
+## Install to blueprints/script/aqara/aqara_t1m_ring_gradient_blueprint.yaml
+
+blueprint:
+  name: Aqara T1M - Ring Gradient Colors Script
+  description: >
+    Script blueprint to apply solid or gradient colors across the T1M RGB ring (26 segments).
+    Select 2-6 colors and the blueprint will either divide them evenly across segments
+    or create smooth gradients between them. Supports multiple lights.
+  domain: script
+  input:
+    target_lights:
+      name: Target Lights
+      description: >
+        Select one or more T1M lights or devices.
+      selector:
+        target:
+          entity:
+            - domain: light
+          device:
+            - integration: mqtt
+
+    z2m_base_topic:
+      name: Zigbee2MQTT Base Topic
+      description: The base MQTT topic for your Zigbee2MQTT instance
+      default: "zigbee2mqtt"
+      selector:
+        text:
+    
+    number_of_colors:
+      name: Number of Colors
+      description: How many of the color pickers to use (2-6)
+      default: 2
+      selector:
+        number:
+          min: 2
+          max: 6
+          mode: slider
+    
+    use_gradient:
+      name: Use Gradient
+      description: If enabled, creates smooth color transitions. If disabled, applies solid color blocks.
+      default: false
+      selector:
+        boolean:
+    
+    color_01:
+      name: Color 1
+      description: First color
+      default: [255, 0, 0]
+      selector:
+        color_rgb:
+
+    color_02:
+      name: Color 2
+      description: Second color
+      default: [0, 255, 0]
+      selector:
+        color_rgb:
+
+    color_03:
+      name: Color 3
+      description: Third color
+      default: [0, 0, 255]
+      selector:
+        color_rgb:
+
+    color_04:
+      name: Color 4
+      description: Fourth color
+      default: [255, 255, 0]
+      selector:
+        color_rgb:
+
+    color_05:
+      name: Color 5
+      description: Fifth color
+      default: [255, 0, 255]
+      selector:
+        color_rgb:
+
+    color_06:
+      name: Color 6
+      description: Sixth color
+      default: [0, 255, 255]
+      selector:
+        color_rgb:
+
+sequence:
+  - variables:
+      z2m_base_topic: !input z2m_base_topic
+      target_lights: !input target_lights
+      number_of_colors: !input number_of_colors
+      use_gradient: !input use_gradient
+      color_01: !input color_01
+      color_02: !input color_02
+      color_03: !input color_03
+      color_04: !input color_04
+      color_05: !input color_05
+      color_06: !input color_06
+  
+  - variables:
+      # T1M ring has fixed 26 segments
+      segment_count: 26
+      
+      # Build array of selected colors
+      all_colors: >
+        {{ [color_01, color_02, color_03, color_04, color_05, color_06] }}
+      
+      selected_colors: >
+        {{ all_colors[:number_of_colors | int] }}
+  
+  - repeat:
+      for_each: >
+        {% set ns = namespace(lights=[]) %}
+        {% if target_lights.entity_id is defined %}
+          {% if target_lights.entity_id is string %}
+            {% set ns.lights = [target_lights.entity_id] %}
+          {% else %}
+            {% set ns.lights = target_lights.entity_id %}
+          {% endif %}
+        {% endif %}
+        {% if target_lights.device_id is defined %}
+          {% if target_lights.device_id is string %}
+            {% set device_entities = device_entities(target_lights.device_id) | select('match', '^light\.') | list %}
+            {% set ns.lights = ns.lights + device_entities %}
+          {% else %}
+            {% for device_id in target_lights.device_id %}
+              {% set device_entities = device_entities(device_id) | select('match', '^light\.') | list %}
+              {% set ns.lights = ns.lights + device_entities %}
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+        {{ ns.lights | unique | list }}
+      sequence:
+        - variables:
+            entity_device_id: "{{ device_id(repeat.item) }}"
+            z2m_device_name: "{{ device_attr(entity_device_id, 'name') }}"
+        
+        - alias: "Set T1M ring gradient colors"
+          service: mqtt.publish
+          data:
+            topic: "{{ z2m_base_topic }}/{{ z2m_device_name }}/set"
+            payload: >
+              {
+                "segment_colors": [
+                  {%- if use_gradient -%}
+                    {# GRADIENT MODE: Smooth color transitions #}
+                    {%- for seg_idx in range(segment_count | int) -%}
+                      {%- set total_steps = (segment_count - 1) | float -%}
+                      {%- set position = seg_idx / total_steps if total_steps > 0 else 0 -%}
+                      {%- set color_range = (number_of_colors - 1) | float -%}
+                      {%- set color_position = position * color_range -%}
+                      {%- set color_index = color_position | int -%}
+                      {%- set next_index = [color_index + 1, number_of_colors - 1] | min -%}
+                      {%- set blend = color_position - color_index -%}
+                      {%- set color1 = selected_colors[color_index] -%}
+                      {%- set color2 = selected_colors[next_index] -%}
+                      {%- set r = ((color1[0] * (1 - blend)) + (color2[0] * blend)) | int -%}
+                      {%- set g = ((color1[1] * (1 - blend)) + (color2[1] * blend)) | int -%}
+                      {%- set b = ((color1[2] * (1 - blend)) + (color2[2] * blend)) | int -%}
+                      {"segment": {{ seg_idx + 1 }}, "color": "#{{ '%02x%02x%02x' | format(r, g, b) }}"}
+                      {%- if not loop.last -%},{%- endif -%}
+                    {%- endfor -%}
+                  {%- else -%}
+                    {# SOLID MODE: Evenly divided color blocks #}
+                    {%- for seg_idx in range(segment_count | int) -%}
+                      {%- set segs_per_color = (segment_count / number_of_colors) | float -%}
+                      {%- set color_index = (seg_idx / segs_per_color) | int -%}
+                      {%- set color_index = [color_index, number_of_colors - 1] | min -%}
+                      {%- set color = selected_colors[color_index] -%}
+                      {"segment": {{ seg_idx + 1 }}, "color": "#{{ '%02x%02x%02x' | format(color[0], color[1], color[2]) }}"}
+                      {%- if not loop.last -%},{%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+                ]
+              }
+
+mode: single
