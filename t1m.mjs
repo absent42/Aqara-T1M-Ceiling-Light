@@ -6,6 +6,10 @@ import "zigbee-herdsman-converters/lib/types";
 const {lumiModernExtend, manufacturerCode} = lumi;
 const ea = exposes.access;
 
+// ============================================================================
+// SHARED COLOR CONVERSION FUNCTIONS (identical across T1M, T1 Strip, T2)
+// ============================================================================
+
 // Convert RGB to XY
 function rgbToXY(r, g, b) {
     // Normalize RGB to 0-1
@@ -34,15 +38,20 @@ function rgbToXY(r, g, b) {
     };
 }
 
-function encodeColor(hexColor) {
-    const normalized = hexColor.toUpperCase().replace("#", "");
-    if (!/^[0-9A-F]{6}$/.test(normalized)) {
-        throw new Error(`Invalid color format: ${hexColor}. Use format #RRGGBB (e.g., #FF0000)`);
+function encodeColor(color) {
+    // Validate RGB object
+    if (typeof color !== 'object' || color.r === undefined || color.g === undefined || color.b === undefined) {
+        throw new Error(`Invalid color format. Expected {r: 0-255, g: 0-255, b: 0-255}, got: ${JSON.stringify(color)}`);
     }
 
-    const r = Number.parseInt(normalized.substring(0, 2), 16);
-    const g = Number.parseInt(normalized.substring(2, 4), 16);
-    const b = Number.parseInt(normalized.substring(4, 6), 16);
+    const r = Number(color.r);
+    const g = Number(color.g);
+    const b = Number(color.b);
+
+    // Validate ranges
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+        throw new Error(`RGB values must be between 0-255. Got r:${r}, g:${g}, b:${b}`);
+    }
 
     // Convert RGB to XY
     const xy = rgbToXY(r, g, b);
@@ -105,15 +114,15 @@ function generateSegmentMask(segments, deviceType, maxSegments) {
 /**
  * Build segment control packet
  * @param {number[]} segments - Array of segment numbers (1-based)
- * @param {string} hexColor - Hex color string (e.g., "#FF0000")
+ * @param {object} color - RGB color object {r, g, b}
  * @param {number} brightness - Brightness value (0-255)
  * @param {string} deviceType - "t1m" or "strip"
  * @param {number} maxSegments - Maximum valid segment number
  * @returns {number[]} Packet bytes
  */
-function buildSegmentPacket(segments, hexColor, brightness, deviceType, maxSegments) {
+function buildSegmentPacket(segments, color, brightness, deviceType, maxSegments) {
     const segmentMask = generateSegmentMask(segments, deviceType, maxSegments);
-    const colorBytes = encodeColor(hexColor);
+    const colorBytes = encodeColor(color);
     const brightnessByte = Math.max(0, Math.min(255, Math.round(brightness)));
 
     if (deviceType === "t1m") {
@@ -177,9 +186,10 @@ const definition = {
 
         lumiModernExtend.lumiDimmingRangeMin(),
         lumiModernExtend.lumiDimmingRangeMax(),
-        lumiModernExtend.lumiOffOnDuration(),
         lumiModernExtend.lumiOnOffDuration(),
+        lumiModernExtend.lumiOffOnDuration(),
 
+        // RGB Effect Type - T1M specific mappings
         m.enumLookup({
             name: "rgb_effect",
             lookup: {flow1: 0, flow2: 1, fading: 2, hopping: 3, breathing: 4, rolling: 5},
@@ -189,6 +199,7 @@ const definition = {
             zigbeeCommandOptions: {manufacturerCode},
         }),
 
+        // RGB Effect Speed
         m.numeric({
             name: "rgb_effect_speed",
             cluster: "manuSpecificLumi",
@@ -205,7 +216,7 @@ const definition = {
     meta: {},
 
     exposes: [
-        // Ring segment control
+        // Segment color control
         exposes
             .list(
                 "segment_colors",
@@ -213,25 +224,38 @@ const definition = {
                 exposes
                     .composite("segment_color", "segment_color", ea.SET)
                     .withFeature(exposes.numeric("segment", ea.SET).withValueMin(1).withValueMax(26).withDescription("Segment number (1-26)"))
-                    .withFeature(exposes.text("color", ea.SET).withDescription("Hex color (e.g., #FF0000)")),
+                    .withFeature(
+                        exposes
+                            .composite("color", "color", ea.SET)
+                            .withFeature(exposes.numeric("r", ea.SET).withValueMin(0).withValueMax(255).withDescription("Red (0-255)"))
+                            .withFeature(exposes.numeric("g", ea.SET).withValueMin(0).withValueMax(255).withDescription("Green (0-255)"))
+                            .withFeature(exposes.numeric("b", ea.SET).withValueMin(0).withValueMax(255).withDescription("Blue (0-255)"))
+                            .withDescription("RGB color object"),
+                    ),
             )
-            .withDescription("Set individual ring segment colors. #000000 turns off the segment."),
+            .withDescription("Set individual ring segment colors. Black (0,0,0) turns off the segment.")
+            .withCategory("config"),
 
-        // Ring segment brightness control - percentage based (applies to all segments)
+        // Segment brightness control
         exposes
             .numeric("segment_brightness", ea.SET)
             .withValueMin(1)
             .withValueMax(100)
-            .withValueStep(1)
             .withUnit("%")
-            .withDescription("Brightness for ring segments (1-100%)")
+            .withDescription("Brightness for segment colors (1-100%)")
             .withCategory("config"),
 
-        // RGB dynamic effect parameters (effect type and speed handled by modernExtend)
+        // RGB dynamic effects
         exposes
-            .text("rgb_effect_colors", ea.SET)
-            .withDescription("Comma-separated RGB hex colors (e.g., #FF0000,#00FF00,#0000FF). 1-8 colors")
+            .list("rgb_effect_colors", ea.SET, exposes.composite("color", "color", ea.SET)
+                .withFeature(exposes.numeric("r", ea.SET).withValueMin(0).withValueMax(255).withDescription("Red (0-255)"))
+                .withFeature(exposes.numeric("g", ea.SET).withValueMin(0).withValueMax(255).withDescription("Green (0-255)"))
+                .withFeature(exposes.numeric("b", ea.SET).withValueMin(0).withValueMax(255).withDescription("Blue (0-255)")))
+            .withDescription("Array of RGB color objects for dynamic effects (1-8 colors)")
+            .withLengthMin(1)
+            .withLengthMax(8)
             .withCategory("config"),
+
         exposes
             .numeric("rgb_effect_brightness", ea.SET)
             .withValueMin(1)
@@ -261,7 +285,7 @@ const definition = {
 
                 // Detect device type and determine max segments
                 const deviceType = getDeviceType(meta);
-                const maxSegments = deviceType === "t1m" ? 26 : Math.round((meta.state.length || 2) * 5);
+                const maxSegments = 26; // T1M always has 26 segments
 
                 // Brightness from state or use default (100%)
                 const brightnessPercent = meta.state.segment_brightness !== undefined ? meta.state.segment_brightness : 100;
@@ -275,27 +299,35 @@ const definition = {
 
                 for (const item of value) {
                     if (!item.segment || !item.color) {
-                        throw new Error(`Each segment must have "segment" (1-${maxSegments}) and "color" (#RRGGBB) fields`);
+                        throw new Error(`Each segment must have "segment" (1-${maxSegments}) and "color" {r, g, b} fields`);
                     }
 
                     const segment = item.segment;
-                    const color = item.color.toUpperCase();
+                    const color = item.color;
 
                     if (segment < 1 || segment > maxSegments) {
                         throw new Error(`Invalid segment: ${segment}. Must be 1-${maxSegments}`);
                     }
 
-                    if (!colorGroups[color]) {
-                        colorGroups[color] = {
+                    // Validate color object
+                    if (typeof color !== 'object' || color.r === undefined || color.g === undefined || color.b === undefined) {
+                        throw new Error(`Invalid color for segment ${segment}. Expected {r, g, b}`);
+                    }
+
+                    // Use color object as key (JSON string for grouping)
+                    const colorKey = JSON.stringify({r: color.r, g: color.g, b: color.b});
+
+                    if (!colorGroups[colorKey]) {
+                        colorGroups[colorKey] = {
                             color: color,
                             segments: [],
                         };
                     }
-                    colorGroups[color].segments.push(segment);
+                    colorGroups[colorKey].segments.push(segment);
                     specifiedSegments.add(segment);
                 }
 
-                // Turn off unspecified segments by setting to black (#000000)
+                // Turn off unspecified segments by setting to black
                 const unspecifiedSegments = [];
                 for (let seg = 1; seg <= maxSegments; seg++) {
                     if (!specifiedSegments.has(seg)) {
@@ -304,13 +336,14 @@ const definition = {
                 }
 
                 if (unspecifiedSegments.length > 0) {
-                    if (!colorGroups["#000000"]) {
-                        colorGroups["#000000"] = {
-                            color: "#000000",
+                    const blackColorKey = JSON.stringify({r: 0, g: 0, b: 0});
+                    if (!colorGroups[blackColorKey]) {
+                        colorGroups[blackColorKey] = {
+                            color: {r: 0, g: 0, b: 0},
                             segments: unspecifiedSegments,
                         };
                     } else {
-                        colorGroups["#000000"].segments.push(...unspecifiedSegments);
+                        colorGroups[blackColorKey].segments.push(...unspecifiedSegments);
                     }
                 }
 
@@ -344,14 +377,14 @@ const definition = {
             convertSet: async (entity, key, value, meta) => {
                 // Read from incoming message first (allows single MQTT payload with all params),
                 // then fall back to state, then to defaults
-                const colors = meta.message.rgb_effect_colors || meta.state.rgb_effect_colors || "#FF0000,#00FF00,#0000FF";
+                const colors = meta.message.rgb_effect_colors || meta.state.rgb_effect_colors || [{r: 255, g: 0, b: 0}, {r: 0, g: 255, b: 0}, {r: 0, g: 0, b: 255}];
                 const brightnessPercent = meta.message.rgb_effect_brightness ?? meta.state.rgb_effect_brightness ?? 100;
 
-                // Parse colors
-                const colorList = colors.split(",").map((c) => c.trim());
+                // Colors should now be an array of RGB objects
+                const colorList = colors;
 
-                if (colorList.length < 1 || colorList.length > 8) {
-                    throw new Error("Must provide 1-8 colors");
+                if (!Array.isArray(colorList) || colorList.length < 1 || colorList.length > 8) {
+                    throw new Error("Must provide array of 1-8 RGB color objects");
                 }
 
                 if (brightnessPercent < 1 || brightnessPercent > 100) {
