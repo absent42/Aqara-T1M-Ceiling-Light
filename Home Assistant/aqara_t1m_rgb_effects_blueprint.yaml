@@ -53,35 +53,35 @@ blueprint:
     color_01:
       name: Color 1
       description: First effect color
-      default: [214, 235, 255]
+      default: [255, 0, 0]
       selector:
         color_rgb:
 
     color_02:
       name: Color 2
       description: Second effect color
-      default: [92, 86, 255]
+      default: [255, 127, 0]
       selector:
         color_rgb:
 
     color_03:
       name: Color 3
       description: Third effect color
-      default: [93, 0, 255]
+      default: [255, 255, 0]
       selector:
         color_rgb:
 
     color_04:
       name: Color 4
       description: Fourth effect color
-      default: [255, 0, 0]
+      default: [0, 255, 0]
       selector:
         color_rgb:
 
     color_05:
       name: Color 5
       description: Fifth effect color
-      default: [0, 255, 0]
+      default: [0, 255, 127]
       selector:
         color_rgb:
 
@@ -95,42 +95,47 @@ blueprint:
     color_07:
       name: Color 7
       description: Seventh effect color
-      default: [255, 255, 0]
+      default: [0, 127, 255]
       selector:
         color_rgb:
 
     color_08:
       name: Color 8
       description: Eighth effect color
-      default: [255, 0, 255]
+      default: [0, 0, 255]
       selector:
         color_rgb:
 
     rgb_effect_brightness:
       name: Effect Brightness
-      description: Brightness (1-100)
+      description: Brightness of the RGB dynamic effect (1-100%)
       default: 100
       selector:
         number:
           min: 1
           max: 100
+          unit_of_measurement: "%"
           mode: slider
 
     rgb_effect_speed:
       name: Effect Speed
-      description: Speed (1-100)
-      default: 75
+      description: Speed of the RGB dynamic effect (1-100%)
+      default: 50
       selector:
         number:
           min: 1
           max: 100
+          unit_of_measurement: "%"
           mode: slider
 
 sequence:
   - variables:
       z2m_base_topic: !input z2m_base_topic
+      target_lights: !input target_lights
       rgb_effect: !input rgb_effect
       number_of_colors: !input number_of_colors
+      rgb_effect_brightness: !input rgb_effect_brightness
+      rgb_effect_speed: !input rgb_effect_speed
       color_01: !input color_01
       color_02: !input color_02
       color_03: !input color_03
@@ -139,28 +144,21 @@ sequence:
       color_06: !input color_06
       color_07: !input color_07
       color_08: !input color_08
-      rgb_effect_brightness: !input rgb_effect_brightness
-      rgb_effect_speed: !input rgb_effect_speed
-      target_lights: !input target_lights
-
+  
   - variables:
-      # Build hex colors list
+      # Build array of all color choices
       all_colors: >
         {{ [color_01, color_02, color_03, color_04, color_05, color_06, color_07, color_08] }}
       
-      selected_colors: >
-        {{ all_colors[:number_of_colors | int] }}
-      
-      hex_colors: >
+      # Build array of RGB objects based on number_of_colors
+      color_array: >
         {% set ns = namespace(colors=[]) %}
-        {% for c in selected_colors %}
-          {% if c is not none %}
-            {% set hex = '#%02x%02x%02x' % (c[0], c[1], c[2]) %}
-            {% set ns.colors = ns.colors + [hex] %}
-          {% endif %}
+        {% for i in range(number_of_colors | int) %}
+          {% set color = all_colors[i] %}
+          {% set ns.colors = ns.colors + [{"r": color[0], "g": color[1], "b": color[2]}] %}
         {% endfor %}
-        {{ ns.colors | join(',') }}
-
+        {{ ns.colors | to_json }}
+  
   - repeat:
       for_each: >
         {% set ns = namespace(lights=[]) %}
@@ -199,10 +197,10 @@ sequence:
             entity_device_id: "{{ device_id(repeat.item) }}"
             z2m_device_name: "{{ device_attr(entity_device_id, 'name') }}"
         
-        - alias: "Set T1M effect with colors (correct parameter order)"
+        - alias: "Set T1M RGB effect (correct parameter order)"
           service: mqtt.publish
           data:
             topic: "{{ z2m_base_topic }}/{{ z2m_device_name }}/set"
-            payload: '{"rgb_effect":"{{ rgb_effect }}","rgb_effect_speed":{{ rgb_effect_speed }},"rgb_effect_colors":"{{ hex_colors }}","rgb_effect_brightness":{{ rgb_effect_brightness }}}'
+            payload: '{"rgb_effect":"{{ rgb_effect }}","rgb_effect_speed":{{ rgb_effect_speed }},"rgb_effect_colors":{{ color_array }},"rgb_effect_brightness":{{ rgb_effect_brightness }}}'
 
 mode: single
