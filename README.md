@@ -42,7 +42,7 @@ The Home Assistant folder contains a collection of blueprint, scripts, cards and
 
 ## RGB Ring Segment Patterns
 ### aqara_t1m_ring_segments_blueprint.yaml
-Home Assistant script blueprint to control the RGB ring light segments.
+Home Assistant script blueprint to control the individual RGB ring light segments.
 
 #### 1. Import the Blueprint
 1. In Home Assistant, go to **Settings** → **Automations & Scenes** → **Blueprints**
@@ -55,12 +55,10 @@ Home Assistant script blueprint to control the RGB ring light segments.
 2. Click **Add Script** → **Create new script from blueprint**
 3. Select **Aqara T1M - RGB Ring Segments Script**
 4. Configure the script:
-   - **Name**: Give it a descriptive name (e.g., "T1M Custom Ring Pattern")
-   - **Device Name**: Enter your T1M light's friendly name from Zigbee2MQTT (e.g., "Living Room Light")
-     - This is the name shown in the Zigbee2MQTT web interface, NOT the Home Assistant entity name
-     - You can find this in Zigbee2MQTT → Devices → your light
+   - **Target Lights**: Select one or more T1M target enitities/devices, (e.g., light.my_t1m_light)
+   - **Zigbee2MQTT Base Topic**: Only needs to be changed if you have a non-standard Zigbee2MQTT installation
    - **Global Brightness**: 1% - 100%
-   - **Color Pickers**: Configure each of the 26 segment colors. #000000 (black) turns off a segment.
+   - **Color Pickers**: Configure each of the 26 segment colors. #000000 (black) turns off a segment
 5. Save the script
 
 #### 3. Running a created script
@@ -69,6 +67,36 @@ Once created, you can run a script in several ways:
 1. **Manually**: Go to **Settings** → **Automations & Scenes** → **Scripts** and run it
 2. **Dashboard Button**: Add a script button to your dashboard
 3. **Automation**: Trigger it from an automation
+
+### aqara_t1m_ring_gradient_blueprint.yaml
+
+Home Assistant script blueprint to create color gradients or blocks evenly around the ring light.
+
+#### 1. Import the Blueprint
+1. In Home Assistant, go to **Settings** → **Automations & Scenes** → **Blueprints**
+2. Click the **Import Blueprint** button
+3. Paste the URL to this blueprint file or upload it directly
+4. Click **Preview** and then **Import**
+
+#### 2. Create a Script from the Blueprint
+1. Go to **Settings** → **Automations & Scenes** → **Scripts**
+2. Click **Add Script** → **Create new script from blueprint**
+3. Select **Aqara T1M - Ring Gradient Colors Script**
+4. Configure the script:
+   - **Name**: Give it a descriptive name (e.g., "T1M Custom Ring Pattern")
+   - **Target Lights**: Select one or more T1M target enitities/devices, (e.g., light.my_t1m_light)
+   - **Zigbee2MQTT Base Topic**: Only needs to be changed if you have a non-standard Zigbee2MQTT installation
+   - **Use Gradient**: If selected the colors will create a gradient between them over the strip length, if not selected solid color blocks will be created over the strip length
+   - **Color Pickers**: Configure each number of colors up specified above
+5. Save the script
+
+#### 3. Running a created script
+Once created, you can run a script in several ways:
+
+1. **Manually**: Go to **Settings** → **Automations & Scenes** → **Scripts** and run it
+2. **Dashboard Button**: Add a script button to your dashboard
+3. **Automation**: Trigger it from an automation
+
 
 ### aqara_t1m_ring_segments_script_examples.yaml
 
