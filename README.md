@@ -25,7 +25,7 @@ Colors rotate around the ring in a spinning motion.
 
 *Speed:* 1% - 100%
 
-*Colors:* Between 1 and 8 colors can be set for each effect. The color slots are defined by a comma seperated list of RGB hex values, e.g. #ff0000,#00ff00,#0000ff for red, green, blue. 
+*Colors:* Between 1 and 8 colors can be set for each effect.
 
 ## Installation
 
@@ -58,7 +58,7 @@ Home Assistant script blueprint to control the individual RGB ring light segment
    - **Target Lights**: Select one or more T1M target enitities/devices, (e.g., light.my_t1m_light)
    - **Zigbee2MQTT Base Topic**: Only needs to be changed if you have a non-standard Zigbee2MQTT installation
    - **Global Brightness**: 1% - 100%
-   - **Color Pickers**: Configure each of the 26 segment colors. #000000 (black) turns off a segment
+   - **Color Pickers**: Configure each of the 26 segment colors. 000 (black) turns off a segment
 5. Save the script
 
 #### 3. Running a created script
