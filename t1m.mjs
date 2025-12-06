@@ -285,7 +285,7 @@ const definition = {
 
                 // Detect device type and determine max segments
                 const deviceType = getDeviceType(meta);
-                const maxSegments = 26; // T1M always has 26 segments
+                const maxSegments = deviceType === "t1m" ? 26 : Math.round((meta.state.length || 2) * 5);
 
                 // Brightness from state or use default (100%)
                 const brightnessPercent = meta.state.segment_brightness !== undefined ? meta.state.segment_brightness : 100;
