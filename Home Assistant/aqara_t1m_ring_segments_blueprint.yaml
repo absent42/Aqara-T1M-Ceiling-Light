@@ -293,13 +293,25 @@ sequence:
             entity_device_id: "{{ device_id(repeat.item) }}"
             z2m_device_name: "{{ device_attr(entity_device_id, 'name') }}"
         
+        # Step 1: Set the global brightness for all ring segments
+        - alias: "Set segment brightness"
+          service: mqtt.publish
+          data:
+            topic: "{{ z2m_base_topic }}/{{ z2m_device_name }}/set"
+            payload: >
+              {"segment_brightness": {{ global_brightness }}}
+        
+        # Step 2: Wait briefly for brightness to be set in state
+        - delay:
+            milliseconds: 100
+        
+        # Step 3: Set the ring segment colors (brightness is read from state)
         - alias: "Set T1M ring segment colors"
           service: mqtt.publish
           data:
             topic: "{{ z2m_base_topic }}/{{ z2m_device_name }}/set"
             payload: >
               {
-                "segment_brightness": {{ global_brightness }},
                 "segment_colors": [
                   {"segment": 1, "color": {"r": {{ c01[0] }}, "g": {{ c01[1] }}, "b": {{ c01[2] }}}},
                   {"segment": 2, "color": {"r": {{ c02[0] }}, "g": {{ c02[1] }}, "b": {{ c02[2] }}}},
