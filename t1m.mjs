@@ -369,7 +369,7 @@ const definition = {
                 // Determine correct state key based on device type
                 const stateKey = deviceType === "t1m" ? "state_rgb" : "state";
 
-                return {state: {segment_colors: value, [stateKey]: "ON"}};
+                return {state: {segment_colors: value, segment_brightness: brightnessPercent, [stateKey]: "ON"}};
             },
         },
         {
