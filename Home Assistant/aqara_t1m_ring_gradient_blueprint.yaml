@@ -46,6 +46,17 @@ blueprint:
       selector:
         boolean:
     
+    segment_brightness:
+      name: Segment Brightness
+      description: Brightness level for all segments (1-100%)
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+    
     color_1:
       name: Color 1
       description: First color
@@ -94,6 +105,7 @@ sequence:
       target_lights: !input target_lights
       number_of_colors: !input number_of_colors
       use_gradient: !input use_gradient
+      segment_brightness: !input segment_brightness
       color_1: !input color_1
       color_2: !input color_2
       color_3: !input color_3
@@ -147,6 +159,19 @@ sequence:
             entity_device_id: "{{ device_id(repeat.item) }}"
             z2m_device_name: "{{ device_attr(entity_device_id, 'name') }}"
         
+        # Step 1: Set the global brightness for all ring segments
+        - alias: "Set segment brightness"
+          service: mqtt.publish
+          data:
+            topic: "{{ z2m_base_topic }}/{{ z2m_device_name }}/set"
+            payload: >
+              {"segment_brightness": {{ segment_brightness }}}
+        
+        # Step 2: Wait briefly for brightness to be set in state
+        - delay:
+            milliseconds: 100
+        
+        # Step 3: Set T1M ring gradient colors
         - alias: "Set T1M ring gradient colors"
           service: mqtt.publish
           data:
