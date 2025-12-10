@@ -21,8 +21,6 @@ Colors pulse like breathing - getting brighter then dimmer rhythmically.
 **Rolling**:
 Colors rotate around the ring in a spinning motion.
 
-*Brightness:* 1% - 100%
-
 *Speed:* 1% - 100%
 
 *Colors:* Between 1 and 8 colors can be set for each effect.
@@ -38,7 +36,7 @@ Alternatively place the file **t1m.mjs** in the folder **zigbee2mqtt/data/extern
 If an external converter is active for a device a cyan icon with "Supported: external" will be displayed under the device name in Zigbee2MQTT.
 
 ## Home Assistant
-The Home Assistant folder contains a collection of blueprint, scripts, cards and examples to control the RGB ring light with color segmentations and dynamic effects.
+The Home Assistant folder contains a collection of blueprints, scripts, cards and examples to control the RGB ring light with color segmentations and dynamic effects.
 
 ## RGB Ring Segment Patterns
 ### aqara_t1m_ring_segments_blueprint.yaml
@@ -57,7 +55,6 @@ Home Assistant script blueprint to control the individual RGB ring light segment
 4. Configure the script:
    - **Target Lights**: Select one or more T1M target enitities/devices, (e.g., light.my_t1m_light)
    - **Zigbee2MQTT Base Topic**: Only needs to be changed if you have a non-standard Zigbee2MQTT installation
-   - **Global Brightness**: 1% - 100%
    - **Color Pickers**: Configure each of the 26 segment colors. 000 (black) turns off a segment
 5. Save the script
 
@@ -112,13 +109,6 @@ Simple dashboard buttons card example for activating RGB ring segment scripts. R
 1. Edit your Home Assistant dashboard
 2. Click **Add Card** → **Manual**
 3. Copy and paste in the YAML code
-4. For brightness slider create an Input Helper via Home Assistant UI
-    1. Settings → Devices & Services → Helpers
-    2. Create Number helper:
-       - Name: `t1m_preset_brightness`
-       - Min: 1
-       - Max: 100
-       - Step: 1
 
 ### aqara_t1m_ring_segments_card_custom_icons.yaml
 
@@ -130,13 +120,6 @@ Dashboard buttons card example with custom icons for activating RGB ring segment
 2. Edit your Home Assistant dashboard
 3. Click **Add Card** → **Manual**
 4. Copy and paste in the YAML code
-5. For brightness slider create an Input Helper via Home Assistant UI
-    1. Settings → Devices & Services → Helpers
-    2. Create Number helper:
-       - Name: `t1m_preset_brightness`
-       - Min: 1
-       - Max: 100
-       - Step: 1
 
 ## RGB Ring Dynamic Effect Patterns
 
@@ -160,7 +143,6 @@ Home Assistant script blueprint for custom RGB ring light dynamic effects.
    - **RGB Effect**: Select the dynamic effect to use
    - **Number of colors**: Set the number of color pickers the effect pattern will use
    - **Color Pickers**: Configure the number of color pickers selected in the step above.
-   - **Effect Brightnes**: Percentage between 1 and 100
    - **Effect Speed**: Percentage between 1 and 100
 5. Save the script
 
@@ -198,16 +180,3 @@ Turn the light off/on
 Find your T1M light  
 Note the RGB entity ID (e.g., light.ceiling_light_rgb)
 
-## Notes
-  
-- This converter mimics the dynamic RGB effect creation and preview feature of the Aqara Home app.
-  
-- The dynamic RGB effects are not written as scenes to the light's memory as they are when using the Aqara app. That process is done via OTA firmware writes which are not implemented here.
-  
-- Activating such saved effect scenes as well as the light's built in scenes appears to have some sort of vendor lock. Possibly the light is checking if the Zigbee commands are coming from an Aqara hub and won't activate them if the source IEEE address doesn't match.
-  
-- As such, every time you want to activate a particular effect pattern/scene you have to send all the parameters for that effect to the light again (colour selections, brightness, speed and effect type). This is currently achieved through Home Assistant MTQQ payloads containing your custom effect parameters. Example blueprints and card templates are provided to do this.
-
-- White Dynamic Effects are similarly done via OTA firmware writes, however the preview feature is also done this way with these effects.
-
-- Further investigation needs to be done on the White Dynamic Effects and also the OTA firmware writing process to see how these can be replicated.
