@@ -7,6 +7,7 @@
 ## 1. Install the blueprint aqara_t1m_rgb_effects_blueprint.yaml
 ## 2. Replace light.your_t1m_light with your actual light entity ID
 ## 3. Add these scripts to your scripts.yaml
+## 4. Set light brightness using the standard light controls before running effects
 
 t1m_effect_dinner:
   alias: T1M Effect - Dinner
@@ -15,13 +16,12 @@ t1m_effect_dinner:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: flow1
+      effect: flow1
       number_of_colors: 3
       color_01: [214, 235, 255]
       color_02: [92, 86, 255]
       color_03: [93, 0, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 75
+      effect_speed: 75
 
 t1m_effect_sunset:
   alias: T1M Effect - Sunset
@@ -30,14 +30,13 @@ t1m_effect_sunset:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: flow2
+      effect: flow2
       number_of_colors: 4
       color_01: [255, 0, 0]
       color_02: [255, 138, 138]
       color_03: [179, 191, 255]
       color_04: [0, 0, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 10
+      effect_speed: 10
 
 t1m_effect_autumn:
   alias: T1M Effect - Autumn
@@ -46,14 +45,13 @@ t1m_effect_autumn:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: flow1
+      effect: flow1
       number_of_colors: 4
       color_01: [255, 71, 0]
       color_02: [255, 119, 0]
       color_03: [255, 154, 0]
       color_04: [255, 225, 0]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 60
+      effect_speed: 60
 
 t1m_effect_galaxy:
   alias: T1M Effect - Galaxy
@@ -62,14 +60,13 @@ t1m_effect_galaxy:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: fading
+      effect: fading
       number_of_colors: 4
       color_01: [0, 137, 255]
       color_02: [198, 0, 255]
       color_03: [255, 0, 255]
       color_04: [0, 0, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 40
+      effect_speed: 40
 
 t1m_effect_daydream:
   alias: T1M Effect - Daydream
@@ -78,14 +75,13 @@ t1m_effect_daydream:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: fading
+      effect: fading
       number_of_colors: 4
       color_01: [255, 0, 0]
       color_02: [255, 155, 143]
       color_03: [255, 0, 255]
       color_04: [255, 163, 249]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 70
+      effect_speed: 70
 
 t1m_effect_holiday:
   alias: T1M Effect - Holiday
@@ -94,14 +90,13 @@ t1m_effect_holiday:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: breathing
+      effect: breathing
       number_of_colors: 4
       color_01: [7, 255, 36]
       color_02: [255, 97, 0]
       color_03: [55, 184, 255]
       color_04: [0, 6, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 10
+      effect_speed: 10
 
 t1m_effect_party:
   alias: T1M Effect - Party
@@ -110,7 +105,7 @@ t1m_effect_party:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: hopping
+      effect: hopping
       number_of_colors: 7
       color_01: [255, 0, 0]
       color_02: [255, 94, 0]
@@ -119,8 +114,7 @@ t1m_effect_party:
       color_05: [0, 255, 255]
       color_06: [0, 0, 255]
       color_07: [255, 0, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 50
+      effect_speed: 50
 
 t1m_effect_meteor:
   alias: T1M Effect - Meteor
@@ -129,14 +123,13 @@ t1m_effect_meteor:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: rolling
+      effect: rolling
       number_of_colors: 4
       color_01: [255, 148, 0]
       color_02: [89, 255, 0]
       color_03: [0, 255, 252]
       color_04: [175, 7, 255]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 50
+      effect_speed: 50
 
 t1m_effect_alert:
   alias: T1M Effect - Alert
@@ -145,8 +138,7 @@ t1m_effect_alert:
     input:
       target_lights:
         entity_id: light.your_t1m_light
-      rgb_effect: hopping
+      effect: hopping
       number_of_colors: 1
       color_01: [255, 0, 0]
-      rgb_effect_brightness: 100
-      rgb_effect_speed: 100
+      effect_speed: 100
