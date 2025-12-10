@@ -1,6 +1,7 @@
 ## Aqara T1M RGB Ring Segments
 ## Home Assistant script examples
 ##
+## Brightness is controlled by the light's global RGB brightness setting.
 ## These call the blueprint with 12 examples based on the presets in the Aqara Home app
 ##
 ## Installation
@@ -8,13 +9,6 @@
 ## 2. Replace light.YOUR_LIGHT_ENTITY_ID with your light entity ID from Home Assistant
 ## 3. Add these scripts to your scripts.yaml
 ##
-## For brightness slider create an Input Helper via Home Assistant UI
-## 1. Settings → Devices & Services → Helpers
-## 2. Create Number helper:
-##   - Name: `t1m_preset_brightness`
-##   - Min: 1
-##   - Max: 100
-##   - Step: 1
 
 t1m_preset_1:
   alias: T1M Preset 1
@@ -23,7 +17,6 @@ t1m_preset_1:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 205, 213]
       color_02: [255, 205, 213]
       color_03: [255, 205, 213]
@@ -58,7 +51,6 @@ t1m_preset_2:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 235, 193]
       color_02: [255, 235, 193]
       color_03: [255, 235, 193]
@@ -93,7 +85,6 @@ t1m_preset_3:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [129, 235, 254]
       color_02: [129, 235, 254]
       color_03: [129, 235, 254]
@@ -128,7 +119,6 @@ t1m_preset_4:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [233, 202, 249]
       color_02: [233, 202, 249]
       color_03: [233, 202, 249]
@@ -163,7 +153,6 @@ t1m_preset_5:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 83, 74]
       color_02: [255, 83, 74]
       color_03: [255, 83, 74]
@@ -199,7 +188,6 @@ t1m_preset_6:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [26, 152, 249]
       color_02: [26, 152, 249]
       color_03: [26, 152, 249]
@@ -234,7 +222,6 @@ t1m_preset_7:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [167, 188, 255]
       color_02: [167, 188, 255]
       color_03: [167, 188, 255]
@@ -269,7 +256,6 @@ t1m_preset_8:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 221, 50]
       color_02: [255, 221, 50]
       color_03: [255, 221, 50]
@@ -304,7 +290,6 @@ t1m_preset_9:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 134, 160]
       color_02: [255, 134, 160]
       color_03: [255, 134, 160]
@@ -339,7 +324,6 @@ t1m_preset_10:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [193, 129, 235]
       color_02: [193, 129, 235]
       color_03: [193, 129, 235]
@@ -374,7 +358,6 @@ t1m_preset_11:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [45, 168, 249]
       color_02: [45, 168, 249]
       color_03: [45, 168, 249]
@@ -409,7 +392,6 @@ t1m_preset_12:
     input:
       target_lights:
         entity_id: light.YOUR_LIGHT_ENTITY_ID
-      global_brightness: "{{ states('input_number.t1m_preset_brightness') | int }}"
       color_01: [255, 170, 161]
       color_02: [255, 170, 161]
       color_03: [255, 170, 161]
