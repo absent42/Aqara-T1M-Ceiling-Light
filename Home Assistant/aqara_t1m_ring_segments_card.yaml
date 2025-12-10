@@ -2,33 +2,20 @@
 ## Home Assistant buttons
 ##
 ## These buttons activate replications of the ring segment preset from the Aqara Home app
+## Brightness is controlled by the light's global RGB brightness setting
 ##
 ## Installation
 ## 1. Install the blueprint aqara_t1m_ring_segments_blueprint.yaml
-## 3. Add the effect scripts from aqara_t1m_ring_segments_script_examples.yaml to your scripts.yaml
-## 4. Edit your Home Assistant dashboard
-## 5. Click **Add Card** >> **Manual**
-## 6. Copy the YAML from below
-##
-## For brightness slider create an Input Helper via Home Assistant UI
-## 1. Settings → Devices & Services → Helpers
-## 2. Create Number helper:
-##   - Name: `t1m_preset_brightness`
-##   - Min: 1
-##   - Max: 100
-##   - Step: 1
+## 2. Add the effect scripts from aqara_t1m_ring_segments_script_examples.yaml to your scripts.yaml
+## 3. Edit your Home Assistant dashboard
+## 4. Click **Add Card** >> **Manual**
+## 5. Copy the YAML from below
 
 type: vertical-stack
 cards:
   - type: markdown
     content: |
       ## Aqara RGB T1M Ring Segments
-      
-  # Brightness Control Slider
-  - type: entities
-    entities:
-      - entity: input_number.t1m_preset_brightness
-        name: Preset Brightness
         
   - type: grid
     columns: 4
