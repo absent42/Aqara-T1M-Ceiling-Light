@@ -137,7 +137,7 @@ const definition = {
         lumiModernExtend.lumiOffOnDuration(),
 
         m.numeric({
-            name: "speed",
+            name: "effect_speed",
             cluster: "manuSpecificLumi",
             attribute: {ID: 0x0520, type: 0x20},
             description: "RGB dynamic effect speed (1-100%)",
