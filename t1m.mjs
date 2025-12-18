@@ -61,6 +61,24 @@ function encodeColor(color) {
 }
 
 // ============================================================================
+// SHARED MODERN EXTENDS (identical across T1M, T1 Strip, T2)
+// ============================================================================
+
+function lumiEffectSpeed() {
+    return m.numeric({
+        name: "effect_speed",
+        cluster: "manuSpecificLumi",
+        attribute: {ID: 0x0520, type: 0x20},
+        description: "RGB dynamic effect speed (1-100%)",
+        zigbeeCommandOptions: {manufacturerCode},
+        unit: "%",
+        valueMin: 1,
+        valueMax: 100,
+        valueStep: 1,
+    });
+}
+
+// ============================================================================
 // UNIFIED SEGMENT CONTROL HELPERS (T1M and T1 Strip)
 // ============================================================================
 
@@ -152,7 +170,7 @@ function lumiEffectColors() {
 }
 
 // ============================================================================
-// MODERN EXTEND: T1M EFFECT
+// MODERN EXTEND: T1M EFFECT (endpoint 1 targeting)
 // ============================================================================
 
 function lumiT1MEffect() {
@@ -163,7 +181,7 @@ function lumiT1MEffect() {
                 key: ["effect"],
                 convertSet: async (entity, key, value, meta) => {
                     const lookup = {flow1: 0, flow2: 1, fading: 2, hopping: 3, breathing: 4, rolling: 5};
-                    
+
                     if (!(value in lookup)) {
                         throw new Error(`Invalid effect: ${value}. Must be one of: ${Object.keys(lookup).join(", ")}`);
                     }
@@ -184,7 +202,7 @@ function lumiT1MEffect() {
         exposes: [
             exposes
                 .enum("effect", ea.SET, ["flow1", "flow2", "fading", "hopping", "breathing", "rolling"])
-                .withDescription("RGB dynamic effect type for ring light")
+                .withDescription("RGB dynamic effect type")
                 .withCategory("config"),
         ],
         fromZigbee: [],
@@ -342,19 +360,8 @@ const definition = {
         lumiModernExtend.lumiOnOffDuration(),
         lumiModernExtend.lumiOffOnDuration(),
 
-        m.numeric({
-            name: "effect_speed",
-            cluster: "manuSpecificLumi",
-            attribute: {ID: 0x0520, type: 0x20},
-            description: "RGB dynamic effect speed (1-100%)",
-            zigbeeCommandOptions: {manufacturerCode},
-            unit: "%",
-            valueMin: 1,
-            valueMax: 100,
-            valueStep: 1,
-        }),
-
         lumiT1MEffect(),
+        lumiEffectSpeed(),
         lumiSegmentColors(),
         lumiEffectColors(),
     ],
