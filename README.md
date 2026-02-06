@@ -43,8 +43,6 @@ If an external converter is active for a device a cyan icon with "Supported: ext
 
 **Use the Aqara Advanced Lighting Home Assistant integration to make custom effects, segment patterns and sequences, triggers, and utilise them in automations - https://github.com/absent42/Aqara-Advanced-Lighting**
 
-The Home Assistant folder contains a collection of blueprints, scripts, cards and examples to control the RGB ring light with color segmentations and dynamic effects.
-
 ## RGB Ring Segment Patterns
 ### aqara_t1m_ring_segments_blueprint.yaml
 Home Assistant script blueprint to control the individual RGB ring light segments.
